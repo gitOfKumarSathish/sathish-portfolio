@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Calendar, Building2, Layers } from "lucide-react";
+import { ChevronDown, Calendar, Building2, Layers, ArrowUpRight } from "lucide-react";
 import SectionHeading from "./SectionHeading";
 
 type Project = {
@@ -9,6 +9,7 @@ type Project = {
   period: string;
   role: string;
   featured?: boolean;
+  href?: string;
   summary: string;
   tech: string[];
   highlights: string[];
@@ -16,9 +17,33 @@ type Project = {
 
 const projects: Project[] = [
   {
+    title: "Bst-Table",
+    client: "Prasaditya Idea Private Limited",
+    period: "May 2026 – Present",
+    role: "Technical Lead Engineer",
+    featured: true,
+    href: "https://gitofkumarsathish.github.io/bst-grid/",
+    summary:
+      "A headless React data grid built on TanStack Table v9 with swappable Material UI and shadcn/Radix skins, designed for flexible adoption without per-seat licensing.",
+    tech: [
+      "React",
+      "TypeScript",
+      "TanStack Table v9",
+      "Headless Grid Engine",
+      "Material UI",
+      "shadcn/Radix",
+    ],
+    highlights: [
+      "Built a reusable headless grid engine that separates core table behavior from presentation, making it easier to adopt across different product UI stacks.",
+      "Designed swappable Material UI and shadcn/Radix skins so teams can keep a consistent design system without rewriting table logic.",
+      "Implemented the project in React and TypeScript with a documentation site that helps engineers evaluate, integrate, and extend the grid faster.",
+      "Positioned the library for long-term product use with MIT/Apache-friendly licensing and no per-seat licensing overhead.",
+    ],
+  },
+  {
     title: "OtoSense® SMS Platform",
     client: "Analog Devices India • Alethea",
-    period: "Jan 2024 – Present",
+    period: "Jan 2024 – Apr 2026",
     role: "Technical Lead Engineer",
     featured: true,
     summary:
@@ -198,6 +223,17 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
             <h3 className="font-display text-lg font-bold text-foreground leading-tight">
               {project.title}
             </h3>
+            {project.href && (
+              <a
+                href={project.href}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
+              >
+                View Docs
+                <ArrowUpRight size={13} />
+              </a>
+            )}
           </div>
         </div>
 
@@ -281,12 +317,13 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
 const ProjectsSection = () => {
   const featured = projects.filter((p) => p.featured);
   const rest = projects.filter((p) => !p.featured);
+  const spotlightLabel = featured.length > 1 ? "Spotlight Projects" : "Spotlight Project";
 
   return (
     <section id="projects" className="section-padding bg-secondary/30">
       <SectionHeading
         title="Projects"
-        subtitle="Real-world enterprise work across IoT, e-commerce, automation, and beyond"
+        subtitle="Real-world enterprise work across reusable UI tooling, IoT, e-commerce, automation, and beyond"
       />
 
       <div className="container mx-auto space-y-10">
@@ -295,7 +332,7 @@ const ProjectsSection = () => {
           <div className="mb-4 flex items-center gap-2">
             <span className="w-1 h-5 rounded-full hero-gradient inline-block" />
             <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              Spotlight Project
+              {spotlightLabel}
             </p>
           </div>
           <div className="grid gap-6">
@@ -329,7 +366,7 @@ const ProjectsSection = () => {
           className="grid grid-cols-2 gap-4 pt-4 md:grid-cols-4"
         >
           {[
-            { value: "8+", label: "Projects Delivered" },
+            { value: "9+", label: "Projects Delivered" },
             { value: "41+", label: "Reusable Components" },
             { value: "28+", label: "Global Partners" },
             { value: "8+", label: "Years of Experience" },

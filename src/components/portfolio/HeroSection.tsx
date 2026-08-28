@@ -359,7 +359,7 @@ const HeroSection = () => {
 
               <div className={`flex w-full items-center justify-center gap-2 text-[11px] sm:text-xs lg:w-auto lg:justify-start ${statusTextClass}`}>
                 <span className={`font-medium ${statusValueClass}`}>
-                  Currently leading OtoSense® SMS platform at Analog Devices (via Alethea).
+                  Currently building Bst-Table at Prasaditya Idea Private Limited.
                 </span>
               </div>
             </motion.div>

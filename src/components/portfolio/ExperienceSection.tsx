@@ -1,27 +1,66 @@
 import { motion } from "framer-motion";
-import { BriefcaseBusiness, MapPin } from "lucide-react";
+import { ArrowUpRight, BriefcaseBusiness, MapPin } from "lucide-react";
 
 type Experience = {
   period: string;
   role: string;
   company: string;
   client?: string;
-  location: string;
+  location?: string;
   summary: string;
   highlights: string[];
   focus: string[];
   workstreams: string[];
+  featuredWork?: {
+    title: string;
+    href: string;
+    description: string;
+    stack: string[];
+  };
   current?: boolean;
 };
 
 const experiences: Experience[] = [
   {
-    period: "2024 - Present",
+    period: "May 2026 - Present",
+    role: "Technical Lead Engineer",
+    company: "Prasaditya Idea Private Limited",
+    current: true,
+    summary:
+      "Since joining on May 4, 2026, I have been building reusable frontend infrastructure with a strong focus on headless, design-system-friendly table experiences.",
+    highlights: [
+      "Built Bst-Table, a headless React data grid engine powered by TanStack Table v9 for teams that need flexible enterprise-grade table foundations.",
+      "Designed the architecture to support swappable Material UI and shadcn/Radix skins, keeping product teams free from single-library lock-in.",
+      "Implemented the library in React and TypeScript with a dedicated documentation experience that clearly communicates usage patterns and adoption guidance.",
+      "Positioned the solution around MIT/Apache-friendly usage with no per-seat licensing, making it practical for long-term product and platform teams.",
+    ],
+    focus: [
+      "React",
+      "TypeScript",
+      "TanStack Table v9",
+      "Headless UI",
+      "Material UI",
+      "shadcn/Radix",
+    ],
+    workstreams: [
+      "Bst-Table headless grid engine",
+      "Swappable UI skins and table composition patterns",
+      "Documentation site and developer adoption experience",
+    ],
+    featuredWork: {
+      title: "Bst-Table",
+      href: "https://gitofkumarsathish.github.io/bst-grid/",
+      description:
+        "A headless React data grid with swappable Material UI and shadcn/Radix skins, built for flexible enterprise adoption.",
+      stack: ["React", "TypeScript", "TanStack Table"],
+    },
+  },
+  {
+    period: "Jan 2024 - Apr 2026",
     role: "Technical Lead Engineer",
     company: "Alethea",
     client: "Client: Analog Devices India",
     location: "Bengaluru",
-    current: true,
     summary:
       "Leading the OtoSense SMS platform end-to-end, from discovery and workflow design to delivery of a multi-tenant Angular monorepo used across enterprise operations.",
     highlights: [
@@ -139,10 +178,12 @@ const ExperienceTimelineItem = ({
           <BriefcaseBusiness size={13} />
           {experience.role}
         </span>
-        <span className="inline-flex items-center gap-1.5">
-          <MapPin size={13} />
-          {experience.location}
-        </span>
+        {experience.location ? (
+          <span className="inline-flex items-center gap-1.5">
+            <MapPin size={13} />
+            {experience.location}
+          </span>
+        ) : null}
       </div>
 
       <h3 className="mt-4 font-display text-2xl font-bold leading-tight text-foreground">
@@ -162,6 +203,45 @@ const ExperienceTimelineItem = ({
           </li>
         ))}
       </ul>
+
+      {experience.featuredWork ? (
+        <div className="mt-4 rounded-2xl border border-primary/20 bg-primary/5 p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                Featured Work
+              </p>
+              <p className="mt-2 text-base font-semibold text-foreground">
+                {experience.featuredWork.title}
+              </p>
+            </div>
+            <a
+              href={experience.featuredWork.href}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-background/80 px-3 py-1.5 text-[11px] font-semibold text-primary transition-colors hover:bg-primary/10"
+            >
+              View
+              <ArrowUpRight size={12} />
+            </a>
+          </div>
+
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            {experience.featuredWork.description}
+          </p>
+
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {experience.featuredWork.stack.map((item) => (
+              <span
+                key={item}
+                className="rounded-full border border-border/70 bg-background/70 px-2.5 py-1 text-[10px] font-mono text-foreground/80"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <div className="mt-4 border-t border-border/60 pt-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
@@ -216,10 +296,12 @@ const ExperienceTimelineItem = ({
                   <BriefcaseBusiness size={14} />
                   {experience.role}
                 </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <MapPin size={14} />
-                  {experience.location}
-                </span>
+                {experience.location ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <MapPin size={14} />
+                    {experience.location}
+                  </span>
+                ) : null}
                 {experience.current ? (
                   <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
                     <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
@@ -280,6 +362,46 @@ const ExperienceTimelineItem = ({
                 ))}
               </ul>
             </div>
+
+            {experience.featuredWork ? (
+              <div className="hover-card-glow rounded-2xl border border-primary/20 bg-primary/5 p-5 backdrop-blur-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+                      Featured Work
+                    </p>
+                    <p className="mt-3 font-display text-2xl font-bold text-foreground">
+                      {experience.featuredWork.title}
+                    </p>
+                  </div>
+
+                  <a
+                    href={experience.featuredWork.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-background/80 px-3 py-2 text-xs font-semibold text-primary transition-colors hover:bg-primary/10"
+                  >
+                    Open Docs
+                    <ArrowUpRight size={14} />
+                  </a>
+                </div>
+
+                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                  {experience.featuredWork.description}
+                </p>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {experience.featuredWork.stack.map((item) => (
+                    <span
+                      key={item}
+                      className="rounded-full border border-border/70 bg-background/70 px-3 py-1.5 text-xs font-mono text-foreground/80"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
@@ -307,15 +429,15 @@ const ExperienceSection = () => (
           <div className="hero-gradient h-full w-16 rounded-full" />
         </div>
         <p className="mt-6 max-w-3xl text-lg leading-relaxed text-muted-foreground">
-          A progression from product engineering into platform leadership across IoT,
-          telecom, automation, and e-commerce systems.
+          A progression from product engineering into platform leadership across reusable UI
+          tooling, IoT, telecom, automation, and e-commerce systems.
         </p>
       </motion.div>
 
       <div className="space-y-0">
         {experiences.map((experience, index) => (
           <ExperienceTimelineItem
-            key={`${experience.company}-${experience.role}`}
+            key={`${experience.company}-${experience.role}-${experience.period}`}
             experience={experience}
             index={index}
             isLast={index === experiences.length - 1}
