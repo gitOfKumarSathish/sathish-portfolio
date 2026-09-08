@@ -1,3 +1,5 @@
+import AmbientBackdrop from "@/components/motion/AmbientBackdrop";
+import ScrollProgress from "@/components/motion/ScrollProgress";
 import Navbar from "@/components/portfolio/Navbar";
 import HeroSection from "@/components/portfolio/HeroSection";
 import StatementSection from "@/components/portfolio/StatementSection";
@@ -12,6 +14,8 @@ import Footer from "@/components/portfolio/Footer";
 
 const Index = () => (
   <div className="relative min-h-screen overflow-x-clip text-foreground">
+    <AmbientBackdrop />
+    <ScrollProgress />
     <Navbar />
     <HeroSection />
     <StatementSection />

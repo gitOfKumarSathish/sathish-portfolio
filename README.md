@@ -30,12 +30,60 @@ npm run dev          # http://localhost:5173
 | `npm test` | Vitest run |
 | `npm run test:watch` | Vitest watch mode |
 
-## Motion
+## The book (`/`)
 
-Most sections are scroll-driven rather than statically animated — they unfold as
-you scroll instead of fading in. Shared primitives live in
-`src/components/motion/`; easing tokens and reveal variants are in
-`src/lib/motion.ts`.
+The portfolio is a book, not a page. It opens on a cover plate, runs through six
+chapters and closes on an epilogue; each chapter opens on a leaf that turns away
+around its own spine, and the whole palette grades toward that chapter's hue as
+you enter it. The previous single-page portfolio is still served at `/classic`.
+
+Everything lives in `src/book/` — `content.ts` holds every word in reading order,
+`components/` the projection system, `chapters/` the seven chapters.
+
+### Scenes, not sections
+
+A `Scene` is one shot. It pins with `position: sticky` inside a tall spacer and
+drives its content from scroll position rather than firing on an in-view
+trigger — the difference between a page that pops and one that plays. Children
+read the scene's timeline through `useSceneRange` and place themselves on it
+with `ScrubIn`, `ScrubLines`, `Layer` and `Push`, so the whole frame can be
+scrubbed backwards and forwards like a playhead.
+
+**A scene measures its whole pass, not just the pinned stretch.** With
+`["start start", "end end"]` a scene only scrubs while pinned, so its content
+sits uncomposed while it travels in and out — which shows up as a dead frame of
+roughly a viewport between consecutive scenes, one faded out and the next not
+yet started. The offset is `["start end", "end start"]` for that reason.
+
+**`length` is not screen time.** A scene of `length` viewports only has
+`length - 1` viewports of scroll to play with, because the first viewport is
+consumed by the pin itself. A `length` of 1.5 leaves half a viewport of
+playback, which reads as a jump cut.
+
+### Reading position
+
+`BookHUD` observes `[data-chapter]` elements to track which chapter owns the
+middle of the viewport, then sets `--chapter-accent` on the root. Every accent
+in the book reads that token, so the grade travels with the narrative.
+
+The ambient fields in `FilmOverlay` use `background-color` rather than a
+gradient, because colour transitions and gradients do not — that is what lets
+the palette drift between chapters instead of cutting.
+
+### Fallbacks
+
+Below `lg`, scenes stop pinning but still scrub as they pass, chapter leaves
+stop turning, and the plate rail becomes a vertical stack. Under
+`prefers-reduced-motion` every scene renders as a composed, motionless frame:
+the scene progress is replaced with a constant, so each `ScrubIn` resolves to
+its resting value with no code path of its own.
+
+## Motion (shared, and the `/classic` page)
+
+Shared primitives live in `src/components/motion/`; easing tokens and reveal
+variants are in `src/lib/motion.ts`. The book uses several of these directly —
+`Marquee`, `Counter`, `Magnetic`, `HorizontalRail` — and the sections below
+describe the `/classic` page they were originally built for.
 
 ### Scroll-driven sections
 

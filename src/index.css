@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -42,7 +42,12 @@
     --glow-primary: 0 0 60px hsl(220 90% 56% / 0.15);
     --glow-accent: 0 0 60px hsl(160 84% 39% / 0.15);
 
+    /* Set by the book's HUD as the reader moves between chapters. */
+    --chapter-accent: 220 82% 62%;
+    --vignette: 220 40% 4%;
+
     --font-display: 'Space Grotesk', sans-serif;
+    --font-serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
     --font-body: 'Inter', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
@@ -90,6 +95,8 @@
     --text-gradient: linear-gradient(135deg, hsl(220 90% 60%), hsl(260 80% 65%));
     --glow-primary: 0 0 80px hsl(220 90% 60% / 0.2);
     --glow-accent: 0 0 80px hsl(160 84% 45% / 0.2);
+
+    --vignette: 0 0% 0%;
 
     --sidebar-background: 220 20% 7%;
     --sidebar-foreground: 240 4.8% 95.9%;

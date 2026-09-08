@@ -18,7 +18,7 @@ interface HorizontalRailProps {
  * flush against the right edge no matter how many items or how wide the screen.
  * Falls back to an ordinary vertical stack on small screens and reduced motion.
  */
-const HorizontalRail = ({ items, header, padding = 0.15 }: HorizontalRailProps) => {
+const HorizontalRail = ({ items, header, padding = 0.08 }: HorizontalRailProps) => {
   const reduced = usePrefersReducedMotion();
   const isDesktop = useIsDesktop();
   const containerRef = useRef<HTMLDivElement>(null);

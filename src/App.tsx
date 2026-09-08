@@ -6,10 +6,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/context/ThemeContext";
 import SmoothScroll from "@/components/motion/SmoothScroll";
-import ScrollProgress from "@/components/motion/ScrollProgress";
 import CustomCursor from "@/components/motion/CustomCursor";
 import Preloader from "@/components/motion/Preloader";
-import AmbientBackdrop from "@/components/motion/AmbientBackdrop";
+import BookExperience from "./book/BookExperience.tsx";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -26,12 +25,12 @@ const App = () => (
           <BrowserRouter>
             <SmoothScroll>
               <Preloader />
-              <AmbientBackdrop />
-              <ScrollProgress />
               <CustomCursor />
               <div className="relative z-10 min-h-screen">
                 <Routes>
-                  <Route path="/" element={<Index />} />
+                  <Route path="/" element={<BookExperience />} />
+                  {/* The previous single-page portfolio, kept reachable. */}
+                  <Route path="/classic" element={<Index />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </div>
