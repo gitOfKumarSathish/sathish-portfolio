@@ -1,11 +1,16 @@
 import { useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, useMotionTemplate, useMotionValue, useScroll, useSpring, useTransform } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Mail, FileText } from "lucide-react";
 import profilePhoto from "@/assets/sathish.jpeg";
 import { useTheme } from "@/context/ThemeContext";
-import AnimatedText from "./AnimatedText";
+import TextReveal from "@/components/motion/TextReveal";
+import Magnetic from "@/components/motion/Magnetic";
+import TiltCard from "@/components/motion/TiltCard";
+import Marquee from "@/components/motion/Marquee";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { ease } from "@/lib/motion";
 import HyperspaceBackground from "./HyperspaceBackground";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -141,6 +146,15 @@ const expertiseTags = [
   "WDIO",
 ];
 
+const heroTicker = [
+  "Enterprise Frontend Platforms",
+  "Multi-Tenant Architecture",
+  "Real-Time Analytics",
+  "White-Label Delivery",
+  "Design Systems at Scale",
+  "Delivery Leadership",
+];
+
 const targetRoles = [
   "Technical Lead",
   "Lead Frontend Engineer",
@@ -151,8 +165,52 @@ const targetRoles = [
 const HeroSection = () => {
   const { mode } = useTheme();
   const isDarkMode = mode === "dark";
+  const reduced = usePrefersReducedMotion();
   const heroRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
+
+  // The hero recedes as the page leaves it, so the next section arrives over the
+  // top of it rather than simply scrolling up from underneath.
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const contentY = useTransform(scrollYProgress, [0, 1], [0, 110]);
+  const contentScale = useTransform(scrollYProgress, [0, 1], [1, 0.94]);
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.75], [1, 0]);
+  const exitStyle = reduced ? undefined : { y: contentY, scale: contentScale, opacity: contentOpacity };
+
+  // Pointer position, normalised to -1..1 from the centre of the hero. Text and
+  // portrait move against each other by different amounts, which is what sells
+  // the depth; the spotlight follows in raw pixels.
+  const pointerX = useMotionValue(0);
+  const pointerY = useMotionValue(0);
+  const spotX = useMotionValue(-500);
+  const spotY = useMotionValue(-500);
+  const glide = { stiffness: 60, damping: 20, mass: 0.6 };
+  const smoothX = useSpring(pointerX, glide);
+  const smoothY = useSpring(pointerY, glide);
+  const textX = useTransform(smoothX, [-1, 1], [12, -12]);
+  const textY = useTransform(smoothY, [-1, 1], [9, -9]);
+  const artX = useTransform(smoothX, [-1, 1], [-26, 26]);
+  const artY = useTransform(smoothY, [-1, 1], [-18, 18]);
+  const spotlight = useMotionTemplate`radial-gradient(520px circle at ${spotX}px ${spotY}px, hsl(var(--primary) / 0.14), transparent 72%)`;
+
+  const trackPointer = (event: React.PointerEvent<HTMLElement>) => {
+    if (reduced) return;
+
+    const rect = heroRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    pointerX.set(((event.clientX - rect.left) / rect.width) * 2 - 1);
+    pointerY.set(((event.clientY - rect.top) / rect.height) * 2 - 1);
+    spotX.set(event.clientX - rect.left);
+    spotY.set(event.clientY - rect.top);
+  };
+
+  const releasePointer = () => {
+    pointerX.set(0);
+    pointerY.set(0);
+    spotX.set(-500);
+    spotY.set(-500);
+  };
 
   useEffect(() => {
     if (!bgRef.current || !heroRef.current) return;
@@ -196,8 +254,18 @@ const HeroSection = () => {
     <section
       id="hero"
       ref={heroRef}
+      onPointerMove={trackPointer}
+      onPointerLeave={releasePointer}
       className="relative isolate flex min-h-[100svh] items-center overflow-hidden bg-background"
     >
+      {/* Soft light that follows the cursor across the whole banner */}
+      {!reduced && (
+        <motion.div
+          aria-hidden
+          style={{ background: spotlight }}
+          className="pointer-events-none absolute inset-0 z-[1]"
+        />
+      )}
       <div ref={bgRef} aria-hidden="true" className="absolute inset-0 pointer-events-none">
         {isDarkMode ? (
           <HyperspaceBackground />
@@ -219,9 +287,12 @@ const HeroSection = () => {
         )}
       </div>
 
-      <div className="container relative z-10 mx-auto px-4 sm:px-6">
+      <motion.div style={exitStyle} className="container relative z-10 mx-auto px-4 sm:px-6">
         <div className="grid items-center gap-8 py-16 sm:gap-10 sm:py-20 md:min-h-[85vh] lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] lg:gap-16 xl:grid-cols-[minmax(0,1fr)_460px]">
-          <div className="order-2 flex flex-col items-center text-center lg:order-1 lg:items-start lg:text-left">
+          <motion.div
+            style={reduced ? undefined : { x: textX, y: textY }}
+            className="order-2 flex flex-col items-center text-center lg:order-1 lg:items-start lg:text-left"
+          >
             <motion.p
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -231,19 +302,23 @@ const HeroSection = () => {
               Hi, I&apos;m
             </motion.p>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-              className="mb-3 font-display text-4xl font-bold leading-[1.02] sm:text-5xl md:text-6xl xl:text-7xl"
-            >
-              <span className="text-gradient">Sathish Kumar</span>
-            </motion.h1>
+            <h1 className="mb-3 font-display text-4xl font-bold leading-[1.02] tracking-tight sm:text-5xl md:text-6xl xl:text-7xl">
+              <TextReveal
+                text="Sathish Kumar"
+                className="text-gradient"
+                delay={0.34}
+                stagger={0.038}
+                gradient
+                immediate
+              />
+            </h1>
 
-            <AnimatedText
+            <TextReveal
               text="Technical Lead & Full-Stack Engineer"
-              className={`mb-5 font-display text-xl font-semibold leading-snug sm:text-2xl md:mb-6 md:text-3xl ${roleTextClass}`}
-              delay={0.5}
+              granularity="word"
+              delay={0.62}
+              immediate
+              className={`mb-5 justify-center font-display text-xl font-semibold leading-snug sm:text-2xl md:mb-6 md:text-3xl lg:justify-start ${roleTextClass}`}
             />
 
             <motion.div
@@ -294,20 +369,27 @@ const HeroSection = () => {
               transition={{ delay: 1.05, duration: 0.5 }}
               className="mb-8 flex w-full max-w-md flex-col items-stretch justify-center gap-3 sm:max-w-none sm:flex-row sm:items-center lg:justify-start"
             >
-              <a
-                href="#contact"
-                className="hero-gradient inline-flex w-full items-center justify-center gap-2 rounded-xl px-7 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-primary/25 sm:w-auto"
-              >
-                <Mail size={16} />
-                Get In Touch
-              </a>
-              <a
-                href="#projects"
-                className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-7 py-3.5 text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 sm:w-auto ${secondaryButtonClass}`}
-              >
-                <FileText size={16} />
-                View Work
-              </a>
+              <Magnetic strength={12} className="w-full sm:w-auto">
+                <a
+                  href="#contact"
+                  className="hero-gradient group relative inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl px-7 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-shadow duration-300 hover:shadow-xl hover:shadow-primary/35 sm:w-auto"
+                >
+                  {/* Light sweeps across the button on hover */}
+                  <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full" />
+                  <Mail size={16} />
+                  Get In Touch
+                </a>
+              </Magnetic>
+
+              <Magnetic strength={12} className="w-full sm:w-auto">
+                <a
+                  href="#projects"
+                  className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-7 py-3.5 text-sm font-semibold transition-colors duration-300 sm:w-auto ${secondaryButtonClass}`}
+                >
+                  <FileText size={16} />
+                  View Work
+                </a>
+              </Magnetic>
             </motion.div>
 
             <motion.div
@@ -363,12 +445,13 @@ const HeroSection = () => {
                 </span>
               </div>
             </motion.div>
-          </div>
+          </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.88, x: 30 }}
-            animate={{ opacity: 1, scale: 1, x: 0 }}
-            transition={{ delay: 0.4, duration: 0.9, ease: "easeOut" }}
+            initial={{ opacity: 0, scale: 0.88 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4, duration: 0.9, ease: ease.expoOut }}
+            style={reduced ? undefined : { x: artX, y: artY }}
             className="order-1 relative flex justify-center lg:order-2 lg:justify-end"
           >
             {/*
@@ -376,12 +459,27 @@ const HeroSection = () => {
               Image fills it; icons use angle math to sit on the circumference.
               Outer padding (p-10) gives room for icons that extend beyond the edge.
             */}
-            <div className="relative p-4 sm:p-8 lg:p-12 xl:p-14">
+            <TiltCard max={7} className="relative p-4 sm:p-8 lg:p-12 xl:p-14">
               {/* Circle: image + glow ring */}
               <div className="relative h-[16rem] w-[16rem] sm:h-[20rem] sm:w-[20rem] lg:h-[24rem] lg:w-[24rem] xl:h-[27rem] xl:w-[27rem]">
-                {/* Glow rings */}
-                <div className="absolute -inset-2 rounded-full hero-gradient opacity-40 blur-[10px] pointer-events-none sm:-inset-3" />
-                <div className="absolute -inset-1 rounded-full hero-gradient opacity-25 blur-[3px] pointer-events-none" />
+                {/* Conic ring sweeps around the portrait like a slow lighthouse */}
+                <motion.div
+                  aria-hidden
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+                  className="pointer-events-none absolute -inset-[3px] rounded-full opacity-70 blur-[2px]"
+                  style={{
+                    background:
+                      "conic-gradient(from 0deg, transparent 0deg, hsl(var(--primary)) 70deg, hsl(var(--accent)) 150deg, transparent 220deg, transparent 360deg)",
+                  }}
+                />
+                {/* Ambient bloom that breathes underneath it */}
+                <motion.div
+                  aria-hidden
+                  animate={{ opacity: [0.32, 0.55, 0.32], scale: [1, 1.04, 1] }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                  className="pointer-events-none absolute -inset-3 rounded-full hero-gradient blur-[26px] sm:-inset-4"
+                />
 
                 {/* Photo */}
                 <div className={`absolute inset-0 overflow-hidden rounded-full ${imageFrameClass}`}>
@@ -394,7 +492,14 @@ const HeroSection = () => {
                   />
                 </div>
 
-                {/* Icons pinned to circumference via angle math */}
+                {/* The whole ring orbits; each badge counter-rotates by the
+                    same amount so it drifts around the portrait while staying
+                    upright. */}
+                <motion.div
+                  className="absolute inset-0"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 78, repeat: Infinity, ease: "linear" }}
+                >
                 {floatingIcons.map((icon, i) => {
                   const rad = (icon.angle * Math.PI) / 180;
                   const orbitRadius = 46;
@@ -424,18 +529,21 @@ const HeroSection = () => {
                         },
                       }}
                     >
-                      <div
+                      <motion.div
+                        animate={{ rotate: -360 }}
+                        transition={{ duration: 78, repeat: Infinity, ease: "linear" }}
                         className={`flex scale-[0.8] items-center justify-center rounded-2xl border shadow-xl backdrop-blur-md sm:scale-100 ${icon.bg} ${icon.border}`}
                         style={{ width: icon.size, height: icon.size }}
                         title={icon.label}
                       >
                         {icon.svg}
-                      </div>
+                      </motion.div>
                     </motion.div>
                   );
                 })}
+                </motion.div>
               </div>
-            </div>
+            </TiltCard>
           </motion.div>
         </div>
 
@@ -443,7 +551,7 @@ const HeroSection = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.6 }}
-          className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 md:block"
+          className="absolute bottom-24 left-1/2 hidden -translate-x-1/2 md:block"
         >
           <motion.a
             href="#about"
@@ -461,6 +569,23 @@ const HeroSection = () => {
             </div>
           </motion.a>
         </motion.div>
+      </motion.div>
+
+      {/* Statement ticker anchors the bottom of the hero and keeps it alive
+          while the visitor is still reading the headline. */}
+      <div className="absolute inset-x-0 bottom-0 z-10 border-t border-border/40 bg-background/40 py-3.5 backdrop-blur-sm">
+        <Marquee
+          speed={38}
+          items={heroTicker.map((item) => (
+            <span
+              key={item}
+              className="inline-flex items-center gap-3 px-1 font-mono text-[11px] uppercase tracking-[0.28em] text-muted-foreground sm:text-xs"
+            >
+              {item}
+              <span className="h-1 w-1 rounded-full bg-primary/60" />
+            </span>
+          ))}
+        />
       </div>
     </section>
   );

@@ -2,6 +2,11 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Calendar, Building2, Layers, ArrowUpRight } from "lucide-react";
 import SectionHeading from "./SectionHeading";
+import Reveal from "@/components/motion/Reveal";
+import SpotlightCard from "@/components/motion/SpotlightCard";
+import StackedCards from "@/components/motion/StackedCards";
+import Counter from "@/components/motion/Counter";
+import { ease, viewportOnce } from "@/lib/motion";
 
 type Project = {
   title: string;
@@ -189,24 +194,36 @@ const roleColors: Record<string, string> = {
   "Associate Software Engineer": "bg-cyan-500/10 text-cyan-400",
 };
 
-const ProjectCard = ({ project, index }: { project: Project; index: number }) => {
+const ProjectCard = ({
+  project,
+  index,
+  total,
+}: {
+  project: Project;
+  index: number;
+  total: number;
+}) => {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.08, duration: 0.5 }}
-      className={`glass hover-card-glow rounded-2xl overflow-hidden ${
-        project.featured ? "ring-1 ring-primary/30" : ""
-      }`}
-    >
+    <Reveal delay={0.05} className="h-full">
+      {/* Opaque, not glass: these cards stack on top of each other, and a
+          translucent surface would let the whole deck bleed through. */}
+      <SpotlightCard
+        className={`h-full rounded-2xl border border-border/70 bg-card shadow-2xl shadow-black/10 dark:shadow-black/40 ${
+          project.featured ? "ring-1 ring-primary/30" : ""
+        }`}
+      >
       {/* Card Header */}
       <div className="p-5 sm:p-6">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="font-mono text-xs uppercase tracking-[0.28em] text-muted-foreground">
+                <span className="text-primary">{String(index + 1).padStart(2, "0")}</span>
+                {" / "}
+                {String(total).padStart(2, "0")}
+              </span>
               {project.featured && (
                 <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/20">
                   Featured
@@ -292,7 +309,7 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="overflow-hidden"
+            className="overflow-hidden rounded-b-2xl"
           >
             <div className="border-t border-border px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
@@ -300,17 +317,24 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
               </p>
               <ul className="space-y-2.5">
                 {project.highlights.map((h, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-muted-foreground">
+                  <motion.li
+                    key={i}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.05 + i * 0.06, duration: 0.45, ease: ease.expoOut }}
+                    className="flex items-start gap-3 text-sm text-muted-foreground"
+                  >
                     <span className="w-1.5 h-1.5 rounded-full bg-accent mt-1.5 shrink-0" />
                     {h}
-                  </li>
+                  </motion.li>
                 ))}
               </ul>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+      </SpotlightCard>
+    </Reveal>
   );
 };
 
@@ -322,12 +346,13 @@ const ProjectsSection = () => {
   return (
     <section id="projects" className="section-padding bg-secondary/30">
       <SectionHeading
+        eyebrow="Selected Work"
         title="Projects"
         subtitle="Real-world enterprise work across reusable UI tooling, IoT, e-commerce, automation, and beyond"
       />
 
       <div className="container mx-auto space-y-10">
-        {/* Featured project — full width spotlight */}
+        {/* Featured work pins one card at a time as you scroll through the deck */}
         <div>
           <div className="mb-4 flex items-center gap-2">
             <span className="w-1 h-5 rounded-full hero-gradient inline-block" />
@@ -335,14 +360,13 @@ const ProjectsSection = () => {
               {spotlightLabel}
             </p>
           </div>
-          <div className="grid gap-6">
-            {featured.map((p, i) => (
-              <ProjectCard key={p.title} project={p} index={i} />
+          <StackedCards
+            items={featured.map((p, i) => (
+              <ProjectCard key={p.title} project={p} index={i} total={projects.length} />
             ))}
-          </div>
+          />
         </div>
 
-        {/* All other projects — 2-col grid */}
         <div>
           <div className="mb-4 flex items-center gap-2">
             <span className="w-1 h-5 rounded-full bg-accent inline-block" />
@@ -350,38 +374,45 @@ const ProjectsSection = () => {
               All Projects
             </p>
           </div>
-          <div className="grid md:grid-cols-2 gap-6 items-start">
-            {rest.map((p, i) => (
-              <ProjectCard key={p.title} project={p} index={i} />
+          <StackedCards
+            offset={128}
+            items={rest.map((p, i) => (
+              <ProjectCard
+                key={p.title}
+                project={p}
+                index={featured.length + i}
+                total={projects.length}
+              />
             ))}
-          </div>
+          />
         </div>
 
-        {/* Bottom stat strip */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="grid grid-cols-2 gap-4 pt-4 md:grid-cols-4"
-        >
+        {/* Bottom stat strip — each figure counts up as it enters the viewport */}
+        <div className="grid grid-cols-2 gap-4 pt-4 md:grid-cols-4">
           {[
-            { value: "9+", label: "Projects Delivered" },
-            { value: "41+", label: "Reusable Components" },
-            { value: "28+", label: "Global Partners" },
-            { value: "8+", label: "Years of Experience" },
-          ].map(({ value, label }) => (
-            <div
+            { value: 9, label: "Projects Delivered" },
+            { value: 41, label: "Reusable Components" },
+            { value: 28, label: "Global Partners" },
+            { value: 8, label: "Years of Experience" },
+          ].map(({ value, label }, i) => (
+            <motion.div
               key={label}
-              className="glass hover-card-glow rounded-xl p-4 text-center border border-border"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={viewportOnce}
+              transition={{ duration: 0.7, delay: i * 0.08, ease: ease.expoOut }}
             >
-              <div className="font-display text-2xl font-bold text-gradient mb-1">
-                {value}
-              </div>
-              <div className="text-xs text-muted-foreground">{label}</div>
-            </div>
+              <SpotlightCard className="glass rounded-xl border border-border p-4 text-center">
+                <Counter
+                  value={value}
+                  suffix="+"
+                  className="mb-1 block font-display text-2xl font-bold text-gradient"
+                />
+                <div className="text-xs text-muted-foreground">{label}</div>
+              </SpotlightCard>
+            </motion.div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

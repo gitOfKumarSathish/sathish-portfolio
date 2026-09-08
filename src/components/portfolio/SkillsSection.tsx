@@ -2,6 +2,10 @@ import { motion } from "framer-motion";
 import { Layers, Database, Laptop, ShieldCheck, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import SectionHeading from "./SectionHeading";
+import Reveal from "@/components/motion/Reveal";
+import SpotlightCard from "@/components/motion/SpotlightCard";
+import Marquee from "@/components/motion/Marquee";
+import { ease, viewportOnce } from "@/lib/motion";
 
 type SkillCategory = {
   title: string;
@@ -79,87 +83,93 @@ const skillCategories = [
   },
 ] satisfies SkillCategory[];
 
+const coreStack = ["Angular", "React", "TypeScript", "Node.js", "Highcharts", "WDIO"];
+
 const SkillsSection = () => (
-  <section id="skills" className="section-padding bg-secondary/30 relative overflow-hidden">
-    <SectionHeading title="Skills & Expertise" subtitle="Technologies and tools I work with daily" />
+  <section id="skills" className="section-padding relative overflow-hidden bg-secondary/30">
+    <SectionHeading
+      eyebrow="What I Work With"
+      title="Skills & Expertise"
+      subtitle="Technologies and tools I work with daily"
+    />
 
     <div className="container mx-auto space-y-6 md:space-y-8">
-      <motion.div
-        initial={{ opacity: 0, y: 22 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.55 }}
-        className="glass hover-card-glow rounded-2xl border border-border/60 p-5 sm:p-6"
-      >
-        <div className="grid gap-5 md:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] md:items-center">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Core Capability Stack
-            </p>
-            <h3 className="mt-2 font-display text-2xl font-bold text-foreground sm:text-3xl">
-              Enterprise Frontend Platforms & Delivery Leadership
-            </h3>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Hands-on across architecture, implementation, and release strategy for multi-tenant applications, analytics dashboards, and high-quality engineering delivery.
-            </p>
-          </div>
+      <Reveal>
+        <SpotlightCard className="glass rounded-2xl border border-border/60 p-5 sm:p-6" lift={false}>
+          <div className="grid gap-5 md:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] md:items-center">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                Core Capability Stack
+              </p>
+              <h3 className="mt-2 font-display text-2xl font-bold text-foreground sm:text-3xl">
+                Enterprise Frontend Platforms & Delivery Leadership
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+                Hands-on across architecture, implementation, and release strategy for multi-tenant
+                applications, analytics dashboards, and high-quality engineering delivery.
+              </p>
+            </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-2">
-            {[
-              "Angular",
-              "React",
-              "TypeScript",
-              "Node.js",
-              "Highcharts",
-              "WDIO",
-            ].map((item) => (
-              <span
-                key={item}
-                className="rounded-xl border border-border bg-muted/55 px-3 py-2 text-center text-xs font-semibold text-foreground sm:text-sm"
-              >
-                {item}
-              </span>
-            ))}
+            {/* Core stack cycles past on a loop, pausing when the pointer rests on it */}
+            <Marquee
+              speed={26}
+              items={coreStack.map((item) => (
+                <span
+                  key={item}
+                  className="inline-flex items-center rounded-xl border border-border bg-muted/55 px-4 py-2 text-sm font-semibold text-foreground"
+                >
+                  {item}
+                </span>
+              ))}
+            />
           </div>
-        </div>
-      </motion.div>
+        </SpotlightCard>
+      </Reveal>
 
       <div className="grid gap-6 md:grid-cols-2 md:gap-8">
-      {skillCategories.map((cat, catIdx) => (
-        <motion.div
-          key={cat.title}
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: catIdx * 0.1, duration: 0.5 }}
-          className={`glass hover-card-glow rounded-2xl border border-border/60 p-5 sm:p-6 ${cat.title === "Leadership & Process" ? "md:col-span-2" : ""}`}
-        >
-          <div className="mb-4 flex items-start justify-between gap-4">
-            <div>
-              <h3 className="font-display text-lg font-bold text-foreground sm:text-xl">{cat.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{cat.summary}</p>
-            </div>
-            <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border bg-gradient-to-br ${cat.accent}`}>
-              <cat.icon size={18} className="text-foreground" />
-            </div>
-          </div>
+        {skillCategories.map((cat, catIdx) => (
+          <Reveal
+            key={cat.title}
+            delay={catIdx * 0.08}
+            className={cat.title === "Leadership & Process" ? "md:col-span-2" : ""}
+          >
+            <SpotlightCard className="glass h-full rounded-2xl border border-border/60 p-5 sm:p-6">
+              <div className="mb-4 flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="font-display text-lg font-bold text-foreground sm:text-xl">
+                    {cat.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{cat.summary}</p>
+                </div>
+                <motion.div
+                  initial={{ scale: 0, rotate: -30 }}
+                  whileInView={{ scale: 1, rotate: 0 }}
+                  viewport={viewportOnce}
+                  transition={{ duration: 0.6, delay: 0.12, ease: ease.backOut }}
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border bg-gradient-to-br ${cat.accent}`}
+                >
+                  <cat.icon size={18} className="text-foreground" />
+                </motion.div>
+              </div>
 
-          <div className="flex flex-wrap gap-2.5">
-            {cat.skills.map((skill, i) => (
-              <motion.span
-                key={skill}
-                initial={{ opacity: 0, y: 8 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.35, delay: 0.03 * i }}
-                className="rounded-xl border border-border/80 bg-muted/55 px-3 py-2 text-xs font-medium text-foreground sm:text-sm"
-              >
-                {skill}
-              </motion.span>
-            ))}
-          </div>
-        </motion.div>
-      ))}
+              <div className="flex flex-wrap gap-2.5">
+                {cat.skills.map((skill, i) => (
+                  <motion.span
+                    key={skill}
+                    initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+                    whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    viewport={viewportOnce}
+                    transition={{ duration: 0.5, delay: 0.04 * i, ease: ease.expoOut }}
+                    whileHover={{ y: -3 }}
+                    className="cursor-default rounded-xl border border-border/80 bg-muted/55 px-3 py-2 text-xs font-medium text-foreground transition-colors hover:border-primary/45 hover:bg-primary/10 hover:text-primary sm:text-sm"
+                  >
+                    {skill}
+                  </motion.span>
+                ))}
+              </div>
+            </SpotlightCard>
+          </Reveal>
+        ))}
       </div>
     </div>
   </section>
